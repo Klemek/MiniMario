@@ -7,7 +7,7 @@ import java.util.Random;
 public class MarioAI {
 	
 	//times
-	private static final int MIN_STATE_TIME = 500;
+	private static final int MIN_STATE_TIME = 1000;
 	private static final int MAX_STILL_TIME = 10000-MIN_STATE_TIME;
 	private static final int MAX_WALKING_TIME = 5000-MIN_STATE_TIME;
 	private static final int MAX_RUNNING_TIME = 3000-MIN_STATE_TIME;
@@ -190,9 +190,15 @@ public class MarioAI {
 			break;
 		case LOOSING:
 			if(this.time-this.time2>100){
-				this.time2 = this.time+rand.nextInt(MAX_STILL_TIME)+MIN_STATE_TIME;
-				this.wait = true;
-				this.state = State.STILL;
+				int randi = rand.nextInt(100);
+				if(randi<80){ //0-79 - 80%
+					this.time2 = this.time+rand.nextInt(MAX_STILL_TIME)+MIN_STATE_TIME;
+					this.wait = true;
+					this.state = State.STILL_DUCK;
+				}else{ //80-99 - 20%
+					this.wait = false;
+					this.state = State.RUNNING;
+				}
 			}
 			break;
 		}
