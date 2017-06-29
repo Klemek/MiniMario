@@ -17,7 +17,7 @@ public class MarioAI {
 	private static final float RUN_SPEED = 1.5f;
 	private static final float JUMP_SPEED_X = 0.25f;
 	private static final float GRAVITY = 0.25f;
-	private static final float MAX_JUMP_SPEED_Y = 5f;
+	private static final float MAX_JUMP_SPEED_Y = 10f;
 	
 	//tiles
 	private static final int MARIO_STILL = 0;
@@ -196,16 +196,16 @@ public class MarioAI {
 			break;
 		}
 		
-		this.pos = Utils.add(this.pos, speed);
-		
-		if(pos.x<=minx && this.left || pos.x+sizex>=maxx && !this.left){
-			this.turn = true;
-			this.left = !this.left;
-		}
-		
-		int[] ybounds = Utils.getYBounds((int) pos.x);
-		
-		if(this.state != State.JUMPING){
+		if(this.state != State.LOOSING){
+			this.pos = Utils.add(this.pos, speed);
+			
+			if(pos.x<=minx && this.left || pos.x+sizex>=maxx && !this.left){
+				this.turn = true;
+				this.left = !this.left;
+			}
+			
+			int[] ybounds = Utils.getYBounds((int) pos.x);
+			
 			if(pos.y<ybounds[0]){
 				this.spdy = 0f;
 				this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
@@ -235,7 +235,7 @@ public class MarioAI {
 			case RUNNING:
 				return this.time%150<75?MARIO_RUNNING_1:MARIO_RUNNING_2;
 			case JUMPING:
-				return this.spdy<=1f?MARIO_JUMPING:MARIO_FALLING;
+				return this.spdy<=MAX_JUMP_SPEED_Y/10f?MARIO_JUMPING:MARIO_FALLING;
 			case STILL_LOOK_UP:
 				return MARIO_LOOK_UP;
 			case STILL_WIN:
