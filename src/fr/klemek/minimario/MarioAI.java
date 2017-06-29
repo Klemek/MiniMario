@@ -17,7 +17,8 @@ public class MarioAI {
 	private static final float RUN_SPEED = 1.5f;
 	private static final float JUMP_SPEED_X = 0.25f;
 	private static final float GRAVITY = 0.25f;
-	private static final float MAX_JUMP_SPEED_Y = 10f;
+	private static final float MIN_JUMP_SPEED_Y = 1f;
+	private static final float MAX_JUMP_SPEED_Y = 5f-MIN_JUMP_SPEED_Y;
 	
 	//tiles
 	private static final int MARIO_STILL = 0;
@@ -84,7 +85,7 @@ public class MarioAI {
 		
 		switch(this.state){
 		case JUMPING:
-			speed.x = (this.left?-1f:1f)*speedf*JUMP_SPEED_X;;
+			speed.x = (this.left?-1f:1f)*speedf*JUMP_SPEED_X;
 			this.spdy += GRAVITY*speedf;
 			speed.y = spdy;
 			if(this.spdy>=this.maxspdy){
@@ -110,8 +111,8 @@ public class MarioAI {
 					if(randi<70){ //0-69 - 70%
 						this.state = State.WALKING;
 					}else if(randi<90){ //70-89 - 20%
-						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
-						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
+						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 						this.state = State.JUMPING;
 					}else{ //90-99 - 10%
 						boolean nextSide = rand.nextBoolean();
@@ -153,8 +154,8 @@ public class MarioAI {
 						this.left = nextSide;
 						this.state = State.RUNNING;
 					}else{ //90-99 - 10%
-						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
-						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
+						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 						this.state = State.JUMPING;
 					}
 				}else{
@@ -175,8 +176,8 @@ public class MarioAI {
 						this.left = nextSide;
 						this.state = State.WALKING;
 					}else if(randi<90){ //50-89 - 40%
-						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
-						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
+						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 						this.state = State.JUMPING;
 					}else{ //90-99 - 10%
 						this.state = State.STILL;
@@ -207,12 +208,12 @@ public class MarioAI {
 			int[] ybounds = Utils.getYBounds((int) pos.x);
 			
 			if(pos.y<ybounds[0]){
-				this.spdy = 0f;
-				this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
+				this.spdy = Math.abs(this.spdy);
+				this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 				this.state = State.JUMPING;
 			}else if(pos.y+sizey>ybounds[1]){
-				this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y;
-				this.maxspdy = 0f;
+				this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+				this.maxspdy = -Math.abs(this.spdy);
 				this.state = State.JUMPING;
 			}
 		}
