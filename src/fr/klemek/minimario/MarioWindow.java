@@ -25,7 +25,7 @@ public class MarioWindow extends JWindow implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String VERSION = "1.6.1";
+	private static final String VERSION = "1.6.2";
 	
 	private static final int REFRESH_MS = 20;
 	private static final int TILE_W = 20;
@@ -163,6 +163,7 @@ public class MarioWindow extends JWindow implements ActionListener {
 		if (e.getSource().equals(this.refresh)) {
 			this.setLocation(this.ai.refresh(REFRESH_MS));
 			this.p.setTile(this.ai.getTile(), this.ai.isReversed());
+			this.setAlwaysOnTop(true);
 		}
 	}
 }
