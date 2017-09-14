@@ -19,7 +19,7 @@ import fr.klemek.minimario.LocalServer.ConnectionListener;
 
 public abstract class Launch {
 
-	private static final String VERSION = "1.7.2";
+	private static final String VERSION = "1.7.3";
 	
 	private static TrayIcon trayIcon;
 	private static PopupMenu popup;
