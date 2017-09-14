@@ -17,7 +17,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JWindow;
 import javax.swing.Timer;
 
-public class MarioWindow extends JWindow implements ActionListener {
+public class MarioWindow extends JWindow{
 
 	private static final long serialVersionUID = 797825180779341089L;
 
@@ -40,21 +40,18 @@ public class MarioWindow extends JWindow implements ActionListener {
 	
 	//constructor
 	
-	public MarioWindow(Point start, int factor, String tilesetName) throws IOException {
-		
-		windows.add(this);
+	public MarioWindow(Point start, int factor, String tilesetName){
 		
 		this.setBackground(new Color(0, 0, 0, 0));
-
-		//this.setLocationRelativeTo(null);
-		if(start == null)
-			this.setLocation(Utils.randomScreenLocation(TILE_W*factor, TILE_H*factor));
-		else
-			this.setLocation((int)(start.x + TILE_W*factor/2f), (int)( start.y + TILE_H*factor/2f));
 		
-		this.factor = factor;
-		
-		this.ai = new MarioAI(TILE_W*factor,TILE_H*factor, factor);
+		this.refresh = new Timer(REFRESH_MS, new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setLocation(ai.refresh(REFRESH_MS));
+				p.setTile(ai.getTile(), ai.isReversed());
+				setAlwaysOnTop(true);
+			}
+		});
 		
 		if(tilesetName == null){
 			Random r = new Random();
@@ -70,7 +67,24 @@ public class MarioWindow extends JWindow implements ActionListener {
 		
 		this.tilesetName = tilesetName;
 		
-		BufferedImage tileset = ImageIO.read(this.getClass().getResource("/"+tilesetName+".png"));
+		BufferedImage tileset;
+		try {
+			tileset = ImageIO.read(this.getClass().getResource("/"+tilesetName+".png"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return;
+		}
+		
+		//this.setLocationRelativeTo(null);
+		if(start == null)
+			this.setLocation(Utils.randomScreenLocation(TILE_W*factor, TILE_H*factor));
+		else
+			this.setLocation((int)(start.x + TILE_W*factor/2f), (int)( start.y + TILE_H*factor/2f));
+		
+		this.factor = factor;
+		
+		this.ai = new MarioAI(TILE_W*factor,TILE_H*factor, factor);
+		
 		this.p = new TilePanel(this, tileset, TILE_W, TILE_H, factor);
 		
 		this.p.addMouseListener(new MouseAdapter() {
@@ -102,8 +116,6 @@ public class MarioWindow extends JWindow implements ActionListener {
 		
 		this.add(this.p);
 
-		this.refresh = new Timer(REFRESH_MS, this);
-
 		this.pack();
 		this.setAlwaysOnTop(true);
 
@@ -113,6 +125,8 @@ public class MarioWindow extends JWindow implements ActionListener {
 		
 		this.refresh.start();
 		
+		windows.add(this);
+
 		System.out.println("Spawned "+tilesetName+" at ("+this.getX()+","+this.getY()+")");
 	}
 
@@ -120,18 +134,6 @@ public class MarioWindow extends JWindow implements ActionListener {
 	
 	public void kill(){
 		this.setVisible(false);
-	}
-	
-
-	//events
-	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(this.refresh)) {
-			this.setLocation(this.ai.refresh(REFRESH_MS));
-			this.p.setTile(this.ai.getTile(), this.ai.isReversed());
-			this.setAlwaysOnTop(true);
-		}
 	}
 	
 	//getter/setter

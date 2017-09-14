@@ -1,6 +1,9 @@
 package fr.klemek.minimario;
 
 import java.awt.AWTException;
+import java.awt.Dialog.ModalExclusionType;
+import java.awt.EventQueue;
+import java.awt.Frame;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -8,7 +11,10 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,7 +25,7 @@ import fr.klemek.minimario.LocalServer.ConnectionListener;
 
 public abstract class Launch {
 
-	private static final String VERSION = "1.7.4";
+	private static final String VERSION = "1.7.5";
 	
 	private static TrayIcon trayIcon;
 	private static PopupMenu popup;
@@ -33,24 +39,15 @@ public abstract class Launch {
 		SwingUtilities.invokeLater(new Runnable() {
 	        @Override
 	        public void run() {
-	            try {
-	            	LocalServer.startServer(new ConnectionListener(){
-						@Override
-						public void onConnection() {
-							try {
-								new MarioWindow(null, currentFactor, null);
-								refreshTray();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-	            	});
-	            	
-	            	new MarioWindow(null, currentFactor, null);
-	            	addTrayIcon(MarioWindow.getAll().get(0));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+            	LocalServer.startServer(new ConnectionListener(){
+					@Override
+					public void onConnection() {
+						new MarioWindow(null, currentFactor, null);
+						refreshTray();
+					}
+            	});
+            	new MarioWindow(null, currentFactor, null);
+            	addTrayIcon(MarioWindow.getAll().get(0));
 	        }
 	    });
 	}
@@ -87,12 +84,8 @@ public abstract class Launch {
         add.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				try {
-					new MarioWindow(null, currentFactor, null);
-					refreshTray();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+				new MarioWindow(null, currentFactor, null);
+				refreshTray();
 			}
         });
         
@@ -105,16 +98,12 @@ public abstract class Launch {
 				MarioWindow.getAll().clear();
 				currentFactor /= 2;
 				for(MarioWindow mw:save){
-					try {
-						MarioWindow child1 = new MarioWindow(mw.getCenter(), currentFactor, mw.getTilesetName());
-						MarioWindow child2 = new MarioWindow(mw.getCenter(), currentFactor, mw.getTilesetName());
-						child1.getAi().setInvicible(true);
-						child2.getAi().setInvicible(true);
-						child1.getAi().jump(false);
-						child2.getAi().jump(true);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					MarioWindow child1 = new MarioWindow(mw.getCenter(), currentFactor, mw.getTilesetName());
+					MarioWindow child2 = new MarioWindow(mw.getCenter(), currentFactor, mw.getTilesetName());
+					child1.getAi().setInvicible(true);
+					child2.getAi().setInvicible(true);
+					child1.getAi().jump(false);
+					child2.getAi().jump(true);
 					mw.kill();
 				}
 				save = null;
@@ -143,9 +132,69 @@ public abstract class Launch {
 				System.exit(0);
 			}
         });
+
+        
+        final Frame frame = new Frame("MiniMario");
+        frame.setResizable(false);
+        frame.setUndecorated(true);
+        frame.setType(Frame.Type.UTILITY);
+        frame.setAlwaysOnTop(true);
+        frame.setAutoRequestFocus(true);
+        frame.add(popup);
+    	frame.setVisible(false);
+    	frame.addFocusListener(new FocusListener(){
+
+			@Override
+			public void focusGained(FocusEvent e) {
+				frame.setVisible(false);
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				frame.setVisible(false);
+			}
+    	});
+    	
+        trayIcon.addMouseListener(new MouseListener(){
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				switch(e.getButton()){
+				case MouseEvent.BUTTON1:
+					if(e.getClickCount() == 2){
+						new MarioWindow(null, currentFactor, null);
+						refreshTray();
+					}
+					break;
+				case MouseEvent.BUTTON3:
+					EventQueue.invokeLater(new Runnable(){
+						@Override
+						public void run() {
+				        	frame.setVisible(true);
+				        	popup.show(frame, e.getXOnScreen(), e.getYOnScreen());
+				        	frame.setVisible(false);
+						}
+					});
+					break;
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+
+			@Override
+			public void mouseExited(MouseEvent e) {}
+        });
+        
+        //trayIcon.setPopupMenu(popup);
         
         refreshTray();
-        trayIcon.setPopupMenu(popup);
         
         final SystemTray tray = SystemTray.getSystemTray();
         try {
