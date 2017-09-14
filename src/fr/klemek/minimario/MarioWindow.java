@@ -9,6 +9,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -17,7 +19,9 @@ import javax.swing.Timer;
 
 public class MarioWindow extends JWindow implements ActionListener {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 797825180779341089L;
+
+	private static List<MarioWindow> windows = new ArrayList<>();
 	
 	private static final int REFRESH_MS = 20;
 	private static final int TILE_W = 20;
@@ -38,10 +42,13 @@ public class MarioWindow extends JWindow implements ActionListener {
 	
 	public MarioWindow(Point start, int factor, String tilesetName) throws IOException {
 		
+		windows.add(this);
+		
 		this.setBackground(new Color(0, 0, 0, 0));
 
+		//this.setLocationRelativeTo(null);
 		if(start == null)
-			this.setLocationRelativeTo(null);
+			this.setLocation(Utils.randomScreenLocation(TILE_W*factor, TILE_H*factor));
 		else
 			this.setLocation((int)(start.x + TILE_W*factor/2f), (int)( start.y + TILE_H*factor/2f));
 		
@@ -62,7 +69,6 @@ public class MarioWindow extends JWindow implements ActionListener {
 		}
 		
 		this.tilesetName = tilesetName;
-		
 		
 		BufferedImage tileset = ImageIO.read(this.getClass().getResource("/"+tilesetName+".png"));
 		this.p = new TilePanel(this, tileset, TILE_W, TILE_H, factor);
@@ -114,6 +120,7 @@ public class MarioWindow extends JWindow implements ActionListener {
 		this.setVisible(false);
 	}
 	
+
 	//events
 	
 	@Override
@@ -161,5 +168,11 @@ public class MarioWindow extends JWindow implements ActionListener {
 		
 		this.setVisible(true);
 
+	}
+	
+	//static functions
+
+	public static List<MarioWindow> getAll(){
+		return windows;
 	}
 }

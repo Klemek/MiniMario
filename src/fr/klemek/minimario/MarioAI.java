@@ -3,7 +3,8 @@ package fr.klemek.minimario;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MarioAI {
 	
@@ -47,8 +48,7 @@ public class MarioAI {
 	
 	private Point2D.Float pos;
 	
-	private boolean left, wait, turn;
-	private static Random rand = new Random();
+	private boolean left, wait, turn, kicked, invicible;
 	
 	private final int minx,maxx;
 	private int sizex, sizey, speedf;
@@ -56,7 +56,7 @@ public class MarioAI {
 	//constructor
 	
 	public MarioAI(int sizex, int sizey, int speedf){
-		this.id = rand.nextInt();
+		this.id = Utils.nextInt();
 		this.minx = Utils.getMinX();
 		this.maxx = Utils.getMaxX();
 		this.sizex = sizex;
@@ -86,7 +86,10 @@ public class MarioAI {
 			this.spdy += GRAVITY*speedf;
 			speed.y = spdy;
 			if(this.spdy>=this.maxspdy){
-				int randi = rand.nextInt(100);
+				this.kicked = false;
+				this.invicible = false;
+				this.spdy = 0;
+				int randi = Utils.nextInt(100);
 				if(randi<40){ //0-39 - 40%
 					this.state = State.STILL;
 				}else if(randi<70){ //40-69 - 30%
@@ -104,23 +107,23 @@ public class MarioAI {
 			if(this.time2<this.time){
 				if(this.wait){
 					this.wait = false;
-					int randi = rand.nextInt(100);
+					int randi = Utils.nextInt(100);
 					if(randi<70){ //0-69 - 70%
 						this.state = State.WALKING;
 					}else if(randi<90){ //70-89 - 20%
-						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
-						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+						this.spdy = -Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+						this.maxspdy = Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 						this.state = State.JUMPING;
 					}else{ //90-99 - 10%
-						boolean nextSide = rand.nextBoolean();
+						boolean nextSide = Utils.nextBoolean();
 						this.turn = this.left != nextSide;
 						this.left = nextSide;
 						this.state = State.RUNNING;
 					}
 				}else{
-					this.time2 = this.time+rand.nextInt(MAX_STILL_TIME)+MIN_STATE_TIME;
+					this.time2 = this.time+Utils.nextInt(MAX_STILL_TIME)+MIN_STATE_TIME;
 					this.wait = true;
-					int randi = rand.nextInt(100);
+					int randi = Utils.nextInt(100);
 					if(randi<75){ //0-74 - 75%
 						this.state = State.STILL;
 					}else if(randi<85){ //75-84 - 10 %
@@ -140,23 +143,23 @@ public class MarioAI {
 			if(this.time2<this.time){
 				if(this.wait){
 					this.wait = false;
-					int randi = rand.nextInt(100);
+					int randi = Utils.nextInt(100);
 					if(randi<60){ //0-59 - 60%
-						boolean nextSide = rand.nextBoolean();
+						boolean nextSide = Utils.nextBoolean();
 						this.left = nextSide;
 						this.state = State.STILL;
 					}else if(randi<90){ //60-89 - 30%
-						boolean nextSide = rand.nextBoolean();
+						boolean nextSide = Utils.nextBoolean();
 						this.turn = this.left != nextSide;
 						this.left = nextSide;
 						this.state = State.RUNNING;
 					}else{ //90-99 - 10%
-						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
-						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+						this.spdy = -Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+						this.maxspdy = Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 						this.state = State.JUMPING;
 					}
 				}else{
-					this.time2 = this.time+rand.nextInt(MAX_WALKING_TIME)+MIN_STATE_TIME;
+					this.time2 = this.time+Utils.nextInt(MAX_WALKING_TIME)+MIN_STATE_TIME;
 					this.wait = true;
 				}
 			}
@@ -166,30 +169,30 @@ public class MarioAI {
 			if(this.time2<this.time){
 				if(this.wait){
 					this.wait = false;
-					int randi = rand.nextInt(100);
+					int randi = Utils.nextInt(100);
 					if(randi<50){ //0-49 - 50%
-						boolean nextSide = rand.nextBoolean();
+						boolean nextSide = Utils.nextBoolean();
 						this.turn = this.left != nextSide;
 						this.left = nextSide;
 						this.state = State.WALKING;
 					}else if(randi<90){ //50-89 - 40%
-						this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
-						this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+						this.spdy = -Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+						this.maxspdy = Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 						this.state = State.JUMPING;
 					}else{ //90-99 - 10%
 						this.state = State.STILL;
 					}
 				}else{
-					this.time2 = this.time+rand.nextInt(MAX_RUNNING_TIME)+MIN_STATE_TIME;
+					this.time2 = this.time+Utils.nextInt(MAX_RUNNING_TIME)+MIN_STATE_TIME;
 					this.wait = true;
 				}
 			}
 			break;
 		case LOOSING:
 			if(this.time-this.time2>100){
-				int randi = rand.nextInt(100);
+				int randi = Utils.nextInt(100);
 				if(randi<80){ //0-79 - 80%
-					this.time2 = this.time+rand.nextInt(MAX_STILL_TIME)+MIN_STATE_TIME;
+					this.time2 = this.time+Utils.nextInt(MAX_STILL_TIME)+MIN_STATE_TIME;
 					this.wait = true;
 					this.state = State.STILL_DUCK;
 				}else{ //80-99 - 20%
@@ -208,30 +211,53 @@ public class MarioAI {
 				this.left = !this.left;
 			}
 			
-			int[] ybounds = Utils.getYBounds((int) pos.x);
-			
-			if(pos.y<ybounds[0]){
-				this.spdy = Math.abs(this.spdy);
-				this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
-				this.state = State.JUMPING;
-			}else if(pos.y+sizey>ybounds[1]){
-				this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
-				this.maxspdy = -Math.abs(this.spdy);
-				this.state = State.JUMPING;
+			if(this.state != State.JUMPING){
+				int[] ybounds = Utils.getYBounds((int) pos.x);
+				if(pos.y<=ybounds[0]){
+					this.spdy = 0;
+					this.maxspdy = Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+					this.state = State.JUMPING;
+				}else if(pos.y+sizey>ybounds[1]){
+					this.spdy = -Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+					this.maxspdy = -Math.abs(this.spdy);
+					this.state = State.JUMPING;
+				}
 			}
+			
+			if(this.spdy<=0){
+				Rectangle bounds = this.getBounds();
+				for(MarioAI ma:getOthers(this.id)){
+					if(ma.spdy<=0 && !ma.isInvicible() && bounds.intersects(ma.getBounds())){
+						ma.fall();
+						ma.setKicked(true);
+					}
+				}
+			}
+			
 		}
-		
+
 		return new Point((int)this.pos.x, (int)this.pos.y);
 	}
 	
-	public void run(boolean left){
+	public void jump(boolean left){
 		this.turn = false;
 		this.left = left;
-		this.time2 = this.time+rand.nextInt(MAX_WALKING_TIME);
+		this.time2 = this.time+Utils.nextInt(MAX_WALKING_TIME);
 		this.wait = false;
-		this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
-		this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+		this.spdy = -Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+		this.maxspdy = Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
 		this.state = State.JUMPING;
+	}
+	
+	public void fall(){
+		int[] ybounds = Utils.getYBounds((int)this.pos.x);
+		if(this.pos.y-this.sizey<ybounds[1]){
+			this.turn = false;
+			this.wait = false;
+			this.maxspdy = Utils.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+			this.spdy = 0;
+			this.state = State.JUMPING;
+		}
 	}
 	
 	//getter/setter
@@ -261,7 +287,7 @@ public class MarioAI {
 			case RUNNING:
 				return this.time%150<75?MARIO_RUNNING_1:MARIO_RUNNING_2;
 			case JUMPING:
-				return this.spdy<=MAX_JUMP_SPEED_Y/10f?MARIO_JUMPING:MARIO_FALLING;
+				return this.spdy<=MAX_JUMP_SPEED_Y/10f?MARIO_JUMPING:this.kicked?MARIO_LOOSING:MARIO_FALLING;
 			case STILL_LOOK_UP:
 				return MARIO_LOOK_UP;
 			case STILL_WIN:
@@ -287,6 +313,36 @@ public class MarioAI {
 
 	public int getId() {
 		return id;
+	}
+	
+	public float getSpdy() {
+		return spdy;
+	}
+
+	public boolean isInvicible() {
+		return invicible;
+	}
+
+	public void setInvicible(boolean invicible) {
+		this.invicible = invicible;
+	}
+
+	public boolean isKicked() {
+		return kicked;
+	}
+
+	public void setKicked(boolean kicked) {
+		this.kicked = kicked;
+	}
+
+	//static functions
+	
+	public static List<MarioAI> getOthers(int id){
+		List<MarioAI> list = new ArrayList<MarioAI>();
+		for(MarioWindow mw:MarioWindow.getAll())
+			if(mw.getAi().getId() != id)
+				list.add(mw.getAi());
+		return list;
 	}
 	
 }

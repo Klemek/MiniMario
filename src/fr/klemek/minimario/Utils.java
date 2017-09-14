@@ -3,15 +3,19 @@ package fr.klemek.minimario;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.net.URL;
+import java.util.Random;
 
 import javax.swing.ImageIcon;
 
 public abstract class Utils {
 
 	private static Rectangle[] bounds = new Rectangle[0];
+	
+	protected static Random rand = new Random();
 	
 	public static Point2D.Float add(Point2D.Float p1, Point2D.Float p2) {
 		return new Point2D.Float(p1.x + p2.x, p1.y + p2.y);
@@ -89,5 +93,34 @@ public abstract class Utils {
         } else {
             return (new ImageIcon(imageURL, description)).getImage();
         }
+    }
+    
+    
+    //random
+    public static int nextInt(int min, int max){
+    	return rand.nextInt(max-min)+min;
+    }
+    
+    public static int nextInt(int max){
+    	return rand.nextInt(max);
+    }
+    
+    public static int nextInt(){
+    	return rand.nextInt();
+    }
+    
+    public static boolean nextBoolean(){
+    	return rand.nextBoolean();
+    }
+    
+    public static float nextFloat(){
+    	return rand.nextFloat();
+    }
+    
+    public static Point randomScreenLocation(int sizex, int sizey){
+    	int x = nextInt(getMinX(),getMaxX()-sizex);
+    	int[] yb = getYBounds(x);
+    	int y = nextInt(yb[0],yb[1]-sizey);
+    	return new Point(x,y);
     }
 }

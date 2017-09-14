@@ -17,10 +17,9 @@ import javax.swing.SwingUtilities;
 
 public abstract class Launch {
 
-	private static final String VERSION = "1.7.1";
+	private static final String VERSION = "1.7.2";
 	
-	private static List<MarioWindow> windows;
-	
+	private static TrayIcon trayIcon;
 	private static PopupMenu popup;
 	private static Menu sizeMenu;
 	private static MenuItem add, split, kill, exit;
@@ -28,15 +27,13 @@ public abstract class Launch {
 	private static int currentFactor = 2;
 	
 	public static void main(String[] args) {
-
-		windows = new ArrayList<>();
 		
 		SwingUtilities.invokeLater(new Runnable() {
 	        @Override
 	        public void run() {
 	            try {
-	            	windows.add(new MarioWindow(null, currentFactor, null));
-	            	addTrayIcon(windows.get(0));
+	            	new MarioWindow(null, currentFactor, null);
+	            	addTrayIcon(MarioWindow.getAll().get(0));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -50,7 +47,7 @@ public abstract class Launch {
             System.exit(0);
         }
 		
-		TrayIcon trayIcon = new TrayIcon(Utils.createImage("/icon_"+mwRef.getTilesetName()+".png", "icon"));
+		trayIcon = new TrayIcon(Utils.createImage("/icon_"+mwRef.getTilesetName()+".png", "icon"));
         trayIcon.setImageAutoSize(true);
 
         popup = new PopupMenu();
@@ -63,10 +60,10 @@ public abstract class Launch {
             size.addActionListener(new ActionListener(){
     			@Override
     			public void actionPerformed(ActionEvent e) {
-    				for(MarioWindow mw:windows)
+    				for(MarioWindow mw:MarioWindow.getAll())
     					mw.setFactor(f);
     				currentFactor = f;
-    				refreshPopupMenu();
+    				refreshTray();
     			}
             });
             sizeMenu.add(size);
@@ -77,8 +74,8 @@ public abstract class Launch {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					windows.add(new MarioWindow(null, currentFactor, null));
-					refreshPopupMenu();
+					new MarioWindow(null, currentFactor, null);
+					refreshTray();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -90,17 +87,17 @@ public abstract class Launch {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				List<MarioWindow> save = new ArrayList<>();
-				save.addAll(windows);
-				windows.clear();
+				save.addAll(MarioWindow.getAll());
+				MarioWindow.getAll().clear();
 				currentFactor /= 2;
 				for(MarioWindow mw:save){
 					try {
 						MarioWindow child1 = new MarioWindow(mw.getCenter(), currentFactor, mw.getTilesetName());
 						MarioWindow child2 = new MarioWindow(mw.getCenter(), currentFactor, mw.getTilesetName());
-						child1.getAi().run(false);
-						child2.getAi().run(true);
-						windows.add(child1);
-						windows.add(child2);
+						child1.getAi().setInvicible(true);
+						child2.getAi().setInvicible(true);
+						child1.getAi().jump(false);
+						child2.getAi().jump(true);
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
@@ -108,7 +105,7 @@ public abstract class Launch {
 				}
 				save = null;
 				System.gc();
-				refreshPopupMenu();
+				refreshTray();
 			}
         });
         
@@ -117,11 +114,11 @@ public abstract class Launch {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Random r = new Random();
-				int index = r.nextInt(windows.size());
-				windows.get(index).kill();
-				windows.remove(index);
+				int index = r.nextInt(MarioWindow.getAll().size());
+				MarioWindow.getAll().get(index).kill();
+				MarioWindow.getAll().remove(index);
 				System.gc();
-				refreshPopupMenu();
+				refreshTray();
 			}
         });
         
@@ -133,11 +130,8 @@ public abstract class Launch {
 			}
         });
         
-       
-
-        refreshPopupMenu();
+        refreshTray();
         trayIcon.setPopupMenu(popup);
-        trayIcon.setToolTip("MiniMario ! (version "+VERSION+")\nBy Klemek");
         
         final SystemTray tray = SystemTray.getSystemTray();
         try {
@@ -148,18 +142,20 @@ public abstract class Launch {
         }
 	}
 	
-	private static void refreshPopupMenu(){
+	private static void refreshTray(){
 		popup.removeAll();
 		popup.add(sizeMenu);
 		popup.add(add);
 		if(currentFactor > 1){
 			popup.add(split);
 		}
-		if(windows.size()>1){
+		if(MarioWindow.getAll().size()>1){
 			exit.setLabel("Kill them all !");
 			popup.add(kill);
+			trayIcon.setToolTip(MarioWindow.getAll().size()+" MiniMarios ! (version "+VERSION+")\nBy Klemek");
 		}else{
 			exit.setLabel("Kill it !");
+			trayIcon.setToolTip("MiniMario ! (version "+VERSION+")\nBy Klemek");
 		}
         popup.add(exit);
 	}
