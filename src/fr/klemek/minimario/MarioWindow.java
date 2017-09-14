@@ -1,13 +1,7 @@
 package fr.klemek.minimario;
 
-import java.awt.AWTException;
 import java.awt.Color;
-import java.awt.Menu;
-import java.awt.MenuItem;
 import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -24,8 +18,6 @@ import javax.swing.Timer;
 public class MarioWindow extends JWindow implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-
-	private static final String VERSION = "1.6.2";
 	
 	private static final int REFRESH_MS = 20;
 	private static final int TILE_W = 20;
@@ -33,32 +25,46 @@ public class MarioWindow extends JWindow implements ActionListener {
 	
 	private TilePanel p;
 	private final Timer refresh;
-
+	
 	private int factor = 2;
 	
 	private MarioAI ai;
 
 	private Point initialClick;
 	
-	public MarioWindow() throws IOException {
+	private String tilesetName;
+	
+	//constructor
+	
+	public MarioWindow(Point start, int factor, String tilesetName) throws IOException {
 		
 		this.setBackground(new Color(0, 0, 0, 0));
-		this.setLocationRelativeTo(null);
 
+		if(start == null)
+			this.setLocationRelativeTo(null);
+		else
+			this.setLocation((int)(start.x + TILE_W*factor/2f), (int)( start.y + TILE_H*factor/2f));
+		
+		this.factor = factor;
+		
 		this.ai = new MarioAI(TILE_W*factor,TILE_H*factor, factor);
 		
-		Random r = new Random();
-		String tileset_name = "mario";
-		if(r.nextInt(100)>=90){ //90-99 - 10%
-			tileset_name = "luigi";
+		if(tilesetName == null){
+			Random r = new Random();
+			tilesetName = "mario";
+			if(r.nextInt(100)>=90){ //90-99 - 10%
+				tilesetName = "luigi";
+			}
+			
+			if(r.nextInt(100)>=99){ //99 - 1%
+				tilesetName += "_fire";
+			}
 		}
 		
-		if(r.nextInt(100)>=99){ //99 - 1%
-			tileset_name += "_fire";
-		}
+		this.tilesetName = tilesetName;
 		
 		
-		BufferedImage tileset = ImageIO.read(this.getClass().getResource("/"+tileset_name+".png"));
+		BufferedImage tileset = ImageIO.read(this.getClass().getResource("/"+tilesetName+".png"));
 		this.p = new TilePanel(this, tileset, TILE_W, TILE_H, factor);
 		
 		this.p.addMouseListener(new MouseAdapter() {
@@ -94,69 +100,21 @@ public class MarioWindow extends JWindow implements ActionListener {
 
 		this.pack();
 		this.setAlwaysOnTop(true);
-		
-		if (!SystemTray.isSupported()) {
-            System.out.println("SystemTray is not supported");
-            return;
-        }
 
-        TrayIcon trayIcon = new TrayIcon(Utils.createImage("/icon_"+tileset_name+".png", "icon"));
-        trayIcon.setImageAutoSize(true);
-
-        final PopupMenu popup = new PopupMenu();
-        
-        
-        
-        Menu sizeMenu = new Menu("Change size");
-        popup.add(sizeMenu);
-        
-        for(int i = 0; i < 5; i++){
-        	final int f = (int)Math.pow(2, i);
-        	MenuItem size = new MenuItem(f+"x");
-            size.addActionListener(new ActionListener(){
-    			@Override
-    			public void actionPerformed(ActionEvent e) {
-    				setFactor(f);
-    			}
-            });
-            sizeMenu.add(size);
-        }
-        
-        MenuItem exit = new MenuItem("Kill it !");
-        exit.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-			}
-        });
-        popup.add(exit);
-        
-        trayIcon.setPopupMenu(popup);
-        trayIcon.setToolTip("MiniMario ! (version "+VERSION+")\nBy Klemek");
-        
-        final SystemTray tray = SystemTray.getSystemTray();
-        try {
-            tray.add(trayIcon);
-        } catch (AWTException e) {
-            System.out.println("TrayIcon could not be added.");
-        }
-		
-		
 		this.setVisible(true);
-
+		
 		this.ai.setPos(this.getLocation());
 		
 		this.refresh.start();
 	}
 
-	private void setFactor(int factor){
+	//functions
+	
+	public void kill(){
 		this.setVisible(false);
-		this.factor = factor;
-		this.ai.setSize(TILE_W*factor,TILE_H*factor, factor);
-		this.p.setFactor(factor);
-		this.pack();
-		this.setVisible(true);
 	}
+	
+	//events
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -165,5 +123,43 @@ public class MarioWindow extends JWindow implements ActionListener {
 			this.p.setTile(this.ai.getTile(), this.ai.isReversed());
 			this.setAlwaysOnTop(true);
 		}
+	}
+	
+	//getter/setter
+	
+	public Point getCenter(){
+		return new Point((int)this.getBounds().getCenterX(),(int)this.getBounds().getCenterY());
+	}
+
+	public String getTilesetName() {
+		return tilesetName;
+	}
+
+	public MarioAI getAi() {
+		return ai;
+	}
+	
+	public void setFactor(int factor){
+
+		int stx = this.getX();
+		int sty = this.getY();
+		
+		this.setVisible(false);
+		
+		int dpx = TILE_W*(factor-this.factor);
+		int dpy = TILE_H*(factor-this.factor);
+		
+		this.factor = factor;
+		
+		this.ai.setSize(TILE_W*factor,TILE_H*factor, factor);
+		this.p.setFactor(factor);
+		
+		this.pack();
+		
+		this.setLocation((int)(stx-dpx/2f), (int)(sty-dpy/2f));
+		this.ai.setPos(this.getLocation());
+		
+		this.setVisible(true);
+
 	}
 }

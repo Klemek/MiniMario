@@ -1,6 +1,7 @@
 package fr.klemek.minimario;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Random;
 
@@ -38,6 +39,8 @@ public class MarioAI {
 		STILL, STILL_BACK, STILL_WIN, STILL_DUCK, STILL_LOOK_UP, WALKING, RUNNING, JUMPING, LOOSING
 	}
 	
+	private int id;
+	
 	private State state;
 	private int time, time2;
 	private float spdy, maxspdy;
@@ -45,12 +48,15 @@ public class MarioAI {
 	private Point2D.Float pos;
 	
 	private boolean left, wait, turn;
-	private Random rand;
+	private static Random rand = new Random();
 	
 	private final int minx,maxx;
 	private int sizex, sizey, speedf;
 	
+	//constructor
+	
 	public MarioAI(int sizex, int sizey, int speedf){
+		this.id = rand.nextInt();
 		this.minx = Utils.getMinX();
 		this.maxx = Utils.getMaxX();
 		this.sizex = sizex;
@@ -59,18 +65,9 @@ public class MarioAI {
 		this.state = State.STILL;
 		this.time = 0;
 		this.pos = new Point2D.Float();
-		this.rand = new Random();
 	}
 	
-	public void setSize(int sizex, int sizey, int speedf){
-		this.sizex = sizex;
-		this.sizey = sizey;
-		this.speedf = speedf;
-	}
-	
-	public void setPos(Point newpos){
-		this.pos = new Point2D.Float(newpos.x, newpos.y);
-	}
+	//functions
 	
 	public void moved(Point newpos){
 		this.pos = new Point2D.Float(newpos.x, newpos.y);
@@ -227,6 +224,28 @@ public class MarioAI {
 		return new Point((int)this.pos.x, (int)this.pos.y);
 	}
 	
+	public void run(boolean left){
+		this.turn = false;
+		this.left = left;
+		this.time2 = this.time+rand.nextInt(MAX_WALKING_TIME);
+		this.wait = false;
+		this.spdy = -rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y-speedf*MIN_JUMP_SPEED_Y;
+		this.maxspdy = rand.nextFloat()*speedf*MAX_JUMP_SPEED_Y+speedf*MIN_JUMP_SPEED_Y;
+		this.state = State.JUMPING;
+	}
+	
+	//getter/setter
+	
+	public void setSize(int sizex, int sizey, int speedf){
+		this.sizex = sizex;
+		this.sizey = sizey;
+		this.speedf = speedf;
+	}
+	
+	public void setPos(Point newpos){
+		this.pos = new Point2D.Float(newpos.x, newpos.y);
+	}
+	
 	public int getTile(){
 		if(this.turn){
 			if(this.time%200>=100){
@@ -260,6 +279,14 @@ public class MarioAI {
 	
 	public boolean isReversed(){
 		return this.left;
+	}
+	
+	public Rectangle getBounds(){
+		return new Rectangle((int)pos.x,(int)pos.y,sizex,sizey);
+	}
+
+	public int getId() {
+		return id;
 	}
 	
 }
