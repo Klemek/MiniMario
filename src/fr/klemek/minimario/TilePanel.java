@@ -28,7 +28,6 @@ public class TilePanel extends JPanel {
 		this.imageHeight = image.getHeight();
 		this.columns = this.imageWidth / this.tileWidth;
 		this.rows = this.imageHeight / this.tileHeight;
-		System.out.println("Tileset : "+this.columns+"x"+this.rows);
 		this.setFactor(factor);
 		this.setBackground(new Color(0, 0, 0, 0));
 		this.setOpaque(false);

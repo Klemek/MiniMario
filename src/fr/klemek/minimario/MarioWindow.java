@@ -112,6 +112,8 @@ public class MarioWindow extends JWindow implements ActionListener {
 		this.ai.setPos(this.getLocation());
 		
 		this.refresh.start();
+		
+		System.out.println("Spawned "+tilesetName+" at ("+this.getX()+","+this.getY()+")");
 	}
 
 	//functions

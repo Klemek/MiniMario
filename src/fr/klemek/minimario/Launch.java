@@ -15,6 +15,8 @@ import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
+import fr.klemek.minimario.LocalServer.ConnectionListener;
+
 public abstract class Launch {
 
 	private static final String VERSION = "1.7.2";
@@ -32,6 +34,18 @@ public abstract class Launch {
 	        @Override
 	        public void run() {
 	            try {
+	            	LocalServer.startServer(new ConnectionListener(){
+						@Override
+						public void onConnection() {
+							try {
+								new MarioWindow(null, currentFactor, null);
+								refreshTray();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+	            	});
+	            	
 	            	new MarioWindow(null, currentFactor, null);
 	            	addTrayIcon(MarioWindow.getAll().get(0));
 				} catch (IOException e) {
