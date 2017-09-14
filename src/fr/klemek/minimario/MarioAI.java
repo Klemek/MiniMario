@@ -228,12 +228,15 @@ public class MarioAI {
 				}
 			}
 			
-			if(this.spdy<=0){
+			if(this.spdy<=0 && (this.state == State.JUMPING || this.state == State.RUNNING)){
 				Rectangle bounds = this.getBounds();
 				for(MarioAI ma:getOthers(this.id)){
 					if(ma.spdy<=0 && !ma.isInvicible() && bounds.intersects(ma.getBounds())){
-						ma.fall();
-						ma.setKicked(true);
+						int randi = Utils.nextInt(100);
+						if(randi<50){
+							ma.fall();
+							ma.setKicked(true);
+						}
 					}
 				}
 			}
