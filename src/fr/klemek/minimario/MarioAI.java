@@ -80,14 +80,18 @@ public class MarioAI {
 		
 		Point2D.Float speed = new Point2D.Float();
 		
+		if(this.state != State.JUMPING){
+			this.kicked = false;
+			this.invicible = false;
+		}
+			
+		
 		switch(this.state){
 		case JUMPING:
 			speed.x = (this.left?-1f:1f)*speedf*JUMP_SPEED_X;
 			this.spdy += GRAVITY*speedf;
 			speed.y = spdy;
 			if(this.spdy>=this.maxspdy){
-				this.kicked = false;
-				this.invicible = false;
 				this.spdy = 0;
 				int randi = Utils.nextInt(100);
 				if(randi<40){ //0-39 - 40%
